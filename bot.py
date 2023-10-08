@@ -3,7 +3,7 @@
 import discord
 import random
 import datetime
-from discord.ext import commands
+from discord.ext import commands, tasks
 import os
 import json
 #import keep_alive
@@ -484,8 +484,8 @@ async def whois(ctx, member: discord.Member = None):
     embed.add_field(name="ID:", value=ctx.author.id, inline=True)
     embed.add_field(name="account created:", value=datetime.datetime.strftime(ctx.author.created_at, "%a %b %-d %X %p %Y"), inline=True)
     embed.add_field(name="joined server at:", value=datetime.datetime.strftime(ctx.author.joined_at, "%a %b %-d %X %p %Y"), inline=True)
-    embed.set_thumbnail(url=ctx.author.avatar_url)
-    embed.set_footer(icon_url=ctx.author.avatar_url, text=f"requested by {ctx.author.name}")
+    embed.set_thumbnail(url=ctx.author.avatar.url)
+    embed.set_footer(icon_url=ctx.author.avatar.url, text=f"requested by {ctx.author.name}")
     await ctx.send(embed=embed)
   else:
     embed = discord.Embed(title=member.name, description=member.mention)
@@ -496,8 +496,8 @@ async def whois(ctx, member: discord.Member = None):
     embed.add_field(name="joined server at:",
         value=datetime.datetime.strftime(member.joined_at, "%a %b %-d %X %p %Y"),
         inline=True)
-    embed.set_thumbnail(url=member.avatar_url)
-    embed.set_footer(icon_url=ctx.author.avatar_url,
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(icon_url=ctx.author.avatar.url,
          text=f"requested by {ctx.author.name}")
     await ctx.send(embed=embed)
 
@@ -540,10 +540,10 @@ async def compliment(ctx, member: discord.Member):
 @client.command()
 async def avatar(ctx, member : discord.Member = None):
   if member == None:
-    url=ctx.author.avatar_url
+    url=ctx.author.avatar.url
     await ctx.send(url)
   else:
-    url=member.avatar_url
+    url=member.avatar.url
     await ctx.send(url)
 
 # spiffy bot hacked
@@ -745,7 +745,7 @@ async def modes(ctx):
           else:
             beststreak = 0
           results = discord.Embed(title="practice ended", description=f"\n **your stats** \n highest streak: `{beststreak}` \n total number correct: `{numcorrect}` \n total played: `{totalplayed}` \n")
-          results.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
+          results.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar.url)
           await ctx.send(embed=results)
           var = 0
           return var
@@ -797,7 +797,7 @@ async def modes(ctx):
                 else:
                   beststreak = 0
                 results = discord.Embed(title="practice ended", description=f"\n **your stats** \n highest streak: `{beststreak}` \n total number correct: `{numcorrect}` \n total played: `{totalplayed}` \n")
-                results.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
+                results.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar.url)
                 await ctx.send(embed=results)
                 var = 0
                 return var 
@@ -808,7 +808,7 @@ async def modes(ctx):
               else:
                 beststreak = 0
               results = discord.Embed(title="practice ended due to inactivity", description=f"\n **your stats** \n highest streak: `{beststreak}` \n total number correct: `{numcorrect}` \n total played: `{totalplayed}` \n")
-              results.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
+              results.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar.url)
               await ctx.send(embed=results)
               var = 0
               return var
@@ -849,27 +849,43 @@ async def shutdown(ctx):
 async def makeminion(ctx, user: discord.Member = None):
   if user == None:
     user = ctx.author
-  minion = Image.open("makeminion.jpg")
-  asset = user.avatar_url_as(size=128)
+  minion = Image.open("Images/makeminion.jpg")
+  asset = user.avatar.with_size(128)
   data = BytesIO(await asset.read())
   pfp = Image.open(data)
   pfp = pfp.resize((175, 175))
   minion.paste(pfp, (65,100))
-  minion.save("newminion.jpg")
-  await ctx.send(file = discord.File("newminion.jpg"))
+  minion.save("Images/newminion.jpg")
+  await ctx.send(file = discord.File("Images/newminion.jpg"))
 
 # megamind
 @client.command()
 async def megamind(ctx, *, words):
-  megamind = Image.open("megamind.png")
+  megamind = Image.open("Images/megamind.png")
   width,height = megamind.size
   font = ImageFont.truetype("impact.ttf", 80)
   draw = ImageDraw.Draw(megamind)
   text = words
-  w,h = draw.textsize(text, font=font)
+  w = draw.textlength(text, font=font)
+  h = 80
   draw.text(((megamind.width-w)/2, 20), text, (255,255,255), font=font)
-  megamind.save("newmegamind.png")
-  await ctx.send(file = discord.File("newmegamind.png"))
+  megamind.save("Images/newmegamind.png")
+  await ctx.send(file = discord.File("Images/newmegamind.png"))
 
+# calculator
+@client.command(aliases=['calc'])
+async def calculate(ctx, *, expression):
+  try:
+    result = eval(expression)
+    await ctx.send(result)
+  except Exception as e:
+    await ctx.send('Invalid expression!')
 
-client.run('MTAwMzAwMDY1NjU1NjIwODE5MA.GawCK3.Df-mBYGfHwpxtuHCOupnwkcGTnCDpBsxjnrT6k')
+# reminders
+@client.command()
+async def remind(ctx, time_minutes, *, reminder_text):
+  time_minutes = float(time_minutes)
+  await asyncio.sleep(time_minutes * 60)
+  await ctx.send(f'{ctx.author.mention}: {reminder_text}')
+
+client.run('MTAwMzAwMDY1NjU1NjIwODE5MA.GSkdPD.nJaJFrVVGS9SqB8A9ukSiYY3kX9n0jncJVjSTo')
