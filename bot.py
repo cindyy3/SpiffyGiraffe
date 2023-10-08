@@ -888,4 +888,4 @@ async def remind(ctx, time_minutes, *, reminder_text):
   await asyncio.sleep(time_minutes * 60)
   await ctx.send(f'{ctx.author.mention}: {reminder_text}')
 
-client.run('MTAwMzAwMDY1NjU1NjIwODE5MA.GV9onP._Hg2bQlOWrEUkC4vmtUplHLSkCkQrs-AknlKto')
+client.run(TOKEN)
